@@ -107,7 +107,7 @@ def list_of_real_predicted_new_cases(sat, scenario, gf, plot_days, smooth=True):
     
     actual_ic_df = fetch_actual_ic_df()
 
-    predicted_ic_df = plot_future(actual_ic_df, range_gf, pivots=scenarios[scenario])
+    predicted_ic_df = plot_future(actual_ic_df, range_gf, scenarios[scenario])
         
         
     predicted_ic_df['new_ic'] = predicted_ic_df['number'].diff().fillna(0)
@@ -118,13 +118,14 @@ def fetch_actual_ic_df():
 
     df_ic = pd.read_excel('../ic_data_update.xlsx')
     df_ic = df_ic.iloc[:,:2]
+
     df_ic.columns = ['date', 'number']
     # df_ic['new_ic'] = df_ic['op ic (cummulatief)'].diff().fillna(0)
     df_ic['date'] = pd.to_datetime(df_ic['date'])
     # df_ic = df_ic[['op ic (cummulatief)', 'date']]
     # df_ic.columns = ['number', 'date']
     df_ic = df_ic[['number', 'date']]
-    print(df_ic)
+    print('Real IC datas until today: \n', df_ic)
     return df_ic
 
 
@@ -132,8 +133,7 @@ def fetch_actual_ic_df():
 
 
 
-def plot_future(df_ic, range_gf, pivots=[{'duration': 10, 'growth': 1.25},
-                               {'duration': 20, 'growth': 1.1}]):  # df with at least columns ['number','date']
+def plot_future(df_ic, range_gf, pivots):  # df with at least columns ['number','date']
     df_ic['date'] = pd.to_datetime(df_ic['date'])
     days = len(df_ic['date'])
     first_date = df_ic.iloc[0]['date']

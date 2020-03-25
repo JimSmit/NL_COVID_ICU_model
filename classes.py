@@ -35,6 +35,24 @@ class Hospitals:
     #     for entry in self.ic_patients:
     #         if self.ic_patients['status'] == 'in_ic':
 
+    def death_ratio(self,count, plot_days):
+        # CREATE Death Ratio range 
+        import datetime as dt
+        start_day='21-02-2020'
+        day_zero=dt.date.today()
+        decrease_date = '18-03-2020'
+                
+        # difference in days between start of data and start of decreasing death rate
+        D1 = (pd.to_datetime(decrease_date) - pd.to_datetime(start_day)).days
+        
+        # difference in days between start of decreasing death rate and today
+        D2 = (pd.to_datetime(day_zero) - pd.to_datetime(decrease_date)).days
+           
+        death_rate_range = np.linspace(1,0.4,14) # gradually decrease from 100 % to 40 % in two weeks
+        death_rate_range = np.pad(death_rate_range, (D1, plot_days - (14-D2)+1), 'constant', constant_values=(1, 0.4))
+        
+        self.ic_death_rat = death_rate_range[count]
+        
     def new_patients(self, new_cases):
         self.current_new_cases = new_cases
         # for i in range(new_cases):
@@ -189,18 +207,32 @@ class Hospitals:
         #     # plt.savefig('foo.png')
 
     # def summarise(self):
-    def plot_log(self,log=True, map_days=False, start_day='21-02-2020', day_zero=dt.date.today()):
+    def plot_log(self,log=True, map_days=False, date_axis = True, start_day='21-02-2020', day_zero=dt.date.today()):
         # if not map_days:
         fig, ax = plt.subplots(dpi=300)
         days = np.arange(self.day)
         if map_days:
-            days = days - (pd.to_datetime(day_zero) - pd.to_datetime(start_day)).days + 1
+            days = days - (pd.to_datetime(day_zero) - pd.to_datetime(start_day)).days 
+        
+        # create date axis with size 'days'
+        dates = pd.date_range(start='22/02/2020', periods=len(days))
+        
 
         for column in self.log_df.columns:
-            ax.plot(days, self.log_df[column],    linewidth=2, label=column)
+            if date_axis:
+                ax.plot(dates, self.log_df[column],    linewidth=2, label=column)
+                fig.autofmt_xdate()
+                ax.axvline(day_zero, color= 'k')
+                ax.text(day_zero,10000,'Today')
+            else: 
+                ax.plot(days, self.log_df[column],    linewidth=2, label=column)
+                ax.axvline(0, color= 'k')
+                ax.text(0,10000,'Today')            
+            
         if log:
             ax.set_yscale('log')
-        ax.legend(loc=2) # upper left
+            
+        ax.legend(loc=2, fontsize= 'xx-small') # upper left
         # ax.set_xticks(days, minor=True)
         # ax.grid(which='both')
         # grid(b=True, which='major')
